@@ -43,6 +43,54 @@ variable "jenkins_ami_filter_parameter" {
   type        = string
 }
 
+variable "jenkins_ami_name" {
+  description = "AMI name which contains jenkins configurations"
+  type        = string
+}
+
+variable "jenkins_sg_name" {
+  description = "Jenkins security group name"
+  type        = string
+}
+
+variable "jenkins_sg_description" {
+  description = "Jenkins security group description"
+  type        = string
+}
+
+variable "jenkins_sg_inbound_rules" {
+  description = "Security group inbound rules for Jenkins"
+  type = map(object({
+    description = string
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
+  }))
+}
+
+variable "jenkins_sg_outbound_rules" {
+  description = "Security group outbound rules for Jenkins"
+  type = map(object({
+    description = string
+    from_port   = number
+    to_port     = number
+    protocol    = string
+    cidr_blocks = list(string)
+  }))
+}
+
+variable "certbot_email" {
+  description = "Email address for Let's Encrypt certificate notifications"
+  type        = string
+}
+
+variable "domain_name" {
+  description = "Domain name for the Jenkins server"
+  type        = string
+}
+
+
 variable "tags" {
   description = "Includes tags for all the resources"
   type        = map(string)
