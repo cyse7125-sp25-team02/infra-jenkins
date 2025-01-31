@@ -10,10 +10,9 @@ resource "aws_vpc" "jenkins_vpc" {
 }
 
 resource "aws_subnet" "jenkins_subnet" {
-  vpc_id                  = aws_vpc.jenkins_vpc.id
-  cidr_block              = var.jenkins_subnet_cidr
-  map_public_ip_on_launch = true
-  availability_zone       = var.jenkins_subnet_az
+  vpc_id            = aws_vpc.jenkins_vpc.id
+  cidr_block        = var.jenkins_subnet_cidr
+  availability_zone = var.jenkins_subnet_az
   tags = {
     Name = var.tags["jenkins_subnet"]
   }
@@ -44,24 +43,30 @@ resource "aws_route_table_association" "jenkins_rta" {
 
 
 resource "aws_security_group" "jenkins_sg" {
-  name        = "jenkins-sg"
-  description = "Allow HTTP/S"
+  name        = var.jenkins_sg_name
+  description = var.jenkins_sg_description
   vpc_id      = aws_vpc.jenkins_vpc.id
 
-
-  ingress {
-    description = "HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+  dynamic "ingress" {
+    for_each = var.jenkins_sg_inbound_rules
+    content {
+      description = ingress.value.description
+      from_port   = ingress.value.from_port
+      to_port     = ingress.value.to_port
+      protocol    = ingress.value.protocol
+      cidr_blocks = ingress.value.cidr_blocks
+    }
   }
-  ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+
+  dynamic "egress" {
+    for_each = var.jenkins_sg_outbound_rules
+    content {
+      description = egress.value.description
+      from_port   = egress.value.from_port
+      to_port     = egress.value.to_port
+      protocol    = egress.value.protocol
+      cidr_blocks = egress.value.cidr_blocks
+    }
   }
 
   tags = {
@@ -73,7 +78,7 @@ data "aws_ami" "jenkins_ami" {
   most_recent = true
   filter {
     name   = var.jenkins_ami_filter_parameter
-    values = ["jenkins-*"] # match the name from packer
+    values = [var.jenkins_ami_name] # match the name from packer
   }
   owners = ["self"]
 }
@@ -83,7 +88,7 @@ resource "aws_instance" "jenkins_ec2" {
   instance_type          = var.jenkins_ec2_instance_type
   subnet_id              = aws_subnet.jenkins_subnet.id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
-
+  user_data              = templatefile("${path.module}/installation.sh", { certbot_email = var.certbot_email, domain_name = var.domain_name })
   tags = {
     Name = var.tags["jenkins_ec2"]
   }
