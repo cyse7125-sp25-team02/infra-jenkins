@@ -91,7 +91,7 @@ variable "domain_name" {
 }
 
 
-variable "tags" {
+variable "tag" {
   description = "Includes tags for all the resources"
   type        = map(string)
 }
