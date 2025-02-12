@@ -13,7 +13,7 @@ pipeline {
                 [key: 'pull_request_sha', value: '$.pull_request.head.sha']
             ],
             causeString: 'PR $pull_request_number $action',
-            token: "github-token",
+            tokenCredentialId: "github-token",
             regexpFilterText: '$action',
             regexpFilterExpression: '(opened|reopened|synchronize)'
         )
