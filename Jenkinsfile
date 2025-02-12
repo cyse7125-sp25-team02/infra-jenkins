@@ -73,7 +73,7 @@ pipeline {
                         try {
                             def commentBody = """**Terraform Validation Results**
 - Status: ${statusEmoji} ${status}
-- Build Number: #${env.BUILD_NUMBER}
+- Build Number: ${env.BUILD_NUMBER}
 - Console Log: ${env.BUILD_URL}"""
 
                             def jsonBody = groovy.json.JsonOutput.toJson([body: commentBody])
