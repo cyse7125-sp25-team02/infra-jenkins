@@ -28,6 +28,12 @@ pipeline {
                 sh 'terraform validate -no-color'
             }
         }
+
+        stage('Terraform Validate') {
+            steps {
+                sh 'terraform validate -no-color'
+            }
+        }
     }
     
     post {
