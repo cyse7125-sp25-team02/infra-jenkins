@@ -44,4 +44,3 @@ To destroy the infrastructure:
  - Terminate the EC2 instance
  - Disassociate (but not release) the Elastic IP
  - Remove all created AWS resources except the Elastic IP
-
