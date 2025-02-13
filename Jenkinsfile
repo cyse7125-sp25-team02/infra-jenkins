@@ -11,17 +11,6 @@ pipeline {
         GITHUB_TOKEN = credentials('github-token')
     }
     
-    triggers {
-        // Trigger on PR events and commits
-        githubPullRequestTrigger {
-            events {
-                pullRequestOpened()
-                pullRequestReopened()
-                commitPushed()
-            }
-        }
-    }
-    
     stages {
         stage('Terraform Init') {
             steps {
