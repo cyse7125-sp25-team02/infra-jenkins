@@ -84,19 +84,20 @@ data "aws_ami" "jenkins_ami" {
 }
 
 resource "aws_instance" "jenkins_ec2" {
-  ami                    = data.aws_ami.jenkins_ami.id
-  instance_type          = var.jenkins_ec2_instance_type
-  subnet_id              = aws_subnet.jenkins_subnet.id
-  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
-  user_data              = templatefile("${path.module}/installation.sh", { certbot_email = var.certbot_email, domain_name = var.domain_name })
+  ami                         = data.aws_ami.jenkins_ami.id
+  instance_type               = var.jenkins_ec2_instance_type
+  subnet_id                   = aws_subnet.jenkins_subnet.id
+  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
+  associate_public_ip_address = true
+  user_data                   = templatefile("${path.module}/installation.sh", { certbot_email = var.certbot_email, domain_name = var.domain_name })
   tags = {
     Name = var.tags["jenkins_ec2"]
   }
 }
 
-resource "aws_eip_association" "jenkins_eip" {
-  instance_id   = aws_instance.jenkins_ec2.id
-  allocation_id = var.jenkins_eip
-}
+# resource "aws_eip_association" "jenkins_eip" {
+#   instance_id   = aws_instance.jenkins_ec2.id
+#   allocation_id = var.jenkins_eip
+# }
 
 
