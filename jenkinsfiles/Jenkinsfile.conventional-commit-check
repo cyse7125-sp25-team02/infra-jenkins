@@ -11,7 +11,10 @@ pipeline {
                     sh 'git config --global user.name "Jenkins"'
                     
                     git branch: 'master', url: 'https://github.com/cyse7125-sp25-team02/infra-jenkins', credentialsId: 'github-credentials'
-                    sh "git fetch origin +refs/heads/*:refs/remotes/origin/*"
+                    
+                    withCredentials([gitUsernamePassword(credentialsId: 'github-credentials', gitToolName: 'git')]) {
+                        sh "git fetch origin +refs/heads/*:refs/remotes/origin/*"
+                    }
 
                     def commitLogs = sh(script: "git log origin/${targetBranch}..HEAD --pretty=format:'%s%n%b'", returnStdout: true).trim()
                     
