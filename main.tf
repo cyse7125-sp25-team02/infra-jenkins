@@ -89,6 +89,11 @@ resource "aws_instance" "jenkins_ec2" {
   subnet_id              = aws_subnet.jenkins_subnet.id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
   user_data              = templatefile("${path.module}/installation.sh", { certbot_email = var.certbot_email, domain_name = var.domain_name })
+
+  root_block_device {
+    volume_size = var.jenkins_ec2_instance_size
+  }
+
   tags = {
     Name = var.tags["jenkins_ec2"]
   }
