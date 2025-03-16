@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Validate Conventional Commits') {
+            steps {
+                script {
+                    def targetBranch = env.CHANGE_TARGET ?: 'main'
+
+                    def commitLogs = sh(script: "git log origin/${targetBranch}..HEAD --pretty=format:'%s%n%b'", returnStdout: true).trim()
+                    
+                    if (!commitLogs) {
+                        echo "No new commits found. Skipping validation."
+                        return
+                    }
+
+                    def conventionalPattern = /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([\w-]+\))?!?: .+/
+                    def breakingChangePattern = /(?m)^BREAKING CHANGE: .+/
+
+                    def invalidCommits = commitLogs.split("\n\n").findAll { commit ->
+                        def (subject, body) = commit.split("\n", 2)
+                        !(subject =~ conventionalPattern || body =~ breakingChangePattern)
+                    }
+
+                    if (invalidCommits) {
+                        error """
+                        The following commit messages do not follow the Conventional Commits specification:
+                        ${invalidCommits.join('\n\n')}
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
