@@ -7,6 +7,8 @@ pipeline {
                 script {
                     def targetBranch = env.CHANGE_TARGET ?: 'main'
 
+                    sh "git fetch origin +refs/heads/*:refs/remotes/origin/*"
+
                     def commitLogs = sh(script: "git log origin/${targetBranch}..HEAD --pretty=format:'%s%n%b'", returnStdout: true).trim()
                     
                     if (!commitLogs) {
