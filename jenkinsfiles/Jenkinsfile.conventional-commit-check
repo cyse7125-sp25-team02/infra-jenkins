@@ -6,12 +6,9 @@ pipeline {
             steps {
                 script {
                     def targetBranch = env.CHANGE_TARGET ?: 'main'
-                    
-                    sh 'git config --global user.email "jenkins@jkops.com"'
-                    sh 'git config --global user.name "Jenkins"'
-                    
-                    git branch: 'master', url: 'https://github.com/cyse7125-sp25-team02/infra-jenkins', credentialsId: 'github-credentials'
-                    
+
+                    checkout scm
+
                     withCredentials([gitUsernamePassword(credentialsId: 'github-credentials', gitToolName: 'git')]) {
                         sh "git fetch origin +refs/heads/*:refs/remotes/origin/*"
                     }
