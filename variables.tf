@@ -95,3 +95,8 @@ variable "tags" {
   description = "Includes tags for all the resources"
   type        = map(string)
 }
+
+variable "jenkins_ec2_instance_size" {
+  description = "Size of the instance"
+  type        = number
+}
