@@ -5,8 +5,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'your-credentials-id',
-                    url: 'https://github.com/username/repo.git'
+                    credentialsId: 'github-credentials',
+                    url: 'https://github.com/cyse7125-sp25-team02/infra-jenkins.git'
                 
                 script {
                     sh 'git fetch origin main --depth=1'
