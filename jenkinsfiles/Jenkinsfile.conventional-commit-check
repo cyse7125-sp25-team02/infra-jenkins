@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main',
+                    credentialsId: 'your-credentials-id',
+                    url: 'https://github.com/username/repo.git'
                 
                 script {
                     sh 'git fetch origin main --depth=1'
