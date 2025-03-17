@@ -4,6 +4,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                checkout scm
+                
                 script {
                     sh 'git fetch origin main --depth=1'
 
