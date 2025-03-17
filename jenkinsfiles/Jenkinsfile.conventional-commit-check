@@ -4,38 +4,31 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    sh 'git fetch origin main --depth=1'
+
+                    env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/main', returnStdout: true).trim()
+                    env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                }
             }
         }
 
-        stage('Check Conventional Commits') {
+        stage('Lint Commits') {
             steps {
-                script {
-                    def validCommits = true
-                    def targetBranch = env.CHANGE_TARGET ?: 'main'
-                    def commitMessages = sh(
-                        script: "git log --pretty=%B ${targetBranch}..HEAD",
-                        returnStdout: true
-                    ).trim().split('\n\n')
-
-                    def conventionalCommitRegex = /^(feat|fix|build|chore|ci|docs|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?: [a-zA-Z0-9].+/
-
-                    for (message in commitMessages) {
-                        def firstLine = message.split('\n')[0]
-                        if (!firstLine.matches(conventionalCommitRegex)) {
-                            echo "ERROR: Commit message does not follow Conventional Commits: '${firstLine}'"
-                            echo "       ${firstLine}"
-                            validCommits = false
-                        }
-                    }
-
-                    if (!validCommits) {
-                        error "One or more commit messages in the Pull Request do not follow Conventional Commits."
-                    } else {
-                        echo "All commit messages in the Pull Request follow Conventional Commits."
-                    }
-                }
+                sh "commitlint --from ${env.PR_BASE_SHA} --to ${env.PR_HEAD_SHA} --verbose --config /etc/commitlint.config.js"
             }
+        }
+    }
+
+    post {
+        success {
+            echo "All commits follow the conventional commit format!"
+        }
+        failure {
+            echo "Some commits do not follow the conventional commit format. Please fix them and try again."
+        }
+        always {
+            cleanWs()
         }
     }
 }
