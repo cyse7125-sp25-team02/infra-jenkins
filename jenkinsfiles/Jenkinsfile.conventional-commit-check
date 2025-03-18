@@ -4,9 +4,11 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master',
-                    credentialsId: 'github-credentials',
-                    url: 'https://github.com/cyse7125-sp25-team02/infra-jenkins.git'
+                cleanWs()
+                sh 'git config --global user.email "jenkins@jkops.com"'
+                sh 'git config --global user.name "Jenkins"'
+                
+                git url: 'https://github.com/cyse7125-sp25-team02/static-site', credentialsId: 'github-credentials'
                 
                 script {
                     sh 'git fetch origin master --depth=1'
