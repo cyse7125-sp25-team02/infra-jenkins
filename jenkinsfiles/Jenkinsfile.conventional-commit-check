@@ -4,21 +4,18 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
-                    sh '''
-                        git remote set-url origin "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/cyse7125-sp25-team02/infra-jenkins.git"
-                        git fetch --no-tags origin master:master
-                        git fetch origin pull/${CHANGE_ID}/head:PR-${CHANGE_ID}
-                        git checkout PR-${CHANGE_ID}
-                    '''
-                }
+                git branch: "PR-${CHANGE_ID}",
+                    credentialsId: 'github-credentials',
+                    url: 'https://github.com/cyse7125-sp25-team02/infra-jenkins.git'
+                
+                sh "git fetch origin master:master"
             }
         }
 
         stage('Determine Commit Range') {
             steps {
                 script {
-                    env.PR_BASE_SHA = sh(script: 'git merge-base master HEAD', returnStdout: true).trim()
+                    env.PR_BASE_SHA = sh(script: 'git merge-base origin/master HEAD', returnStdout: true).trim()
                     env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                 }
 
