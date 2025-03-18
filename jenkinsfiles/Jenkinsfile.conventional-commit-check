@@ -9,17 +9,24 @@ pipeline {
                     sh 'git config --global user.name "Jenkins"'
 
                     withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
-                        
-                        git branch: 'master', 
-                            url: "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/cyse7125-sp25-team02/infra-jenkins.git", 
-                            credentialsId: 'github-credentials'
+                        sh """
+                            git clone https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/cyse7125-sp25-team02/infra-jenkins.git .
+                            git fetch origin +refs/pull/${CHANGE_ID}/head:refs/remotes/origin/PR-${CHANGE_ID}
+                            git checkout -f origin/PR-${CHANGE_ID}
+                        """
 
-                        sh "git fetch https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/cyse7125-sp25-team02/infra-jenkins.git +refs/pull/${CHANGE_ID}/merge:refs/remotes/origin/pr/${CHANGE_ID}/merge --depth=1"
+                        env.PR_BASE_SHA = sh(script: 'git rev-parse origin/master', returnStdout: true).trim()
+                        env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                        
+                        echo "Checking commits from ${env.PR_BASE_SHA} to ${env.PR_HEAD_SHA}"
                     }
-                    
-                    env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/master', returnStdout: true).trim()
-                    env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                 }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install -g @commitlint/config-conventional'
             }
         }
 
