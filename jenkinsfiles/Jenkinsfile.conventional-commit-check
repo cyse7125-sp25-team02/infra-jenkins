@@ -2,13 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Verify Environment') {
-            steps {
-                sh 'node --version'
-                sh 'npm --version'
-            }
-        }
-
         stage('Checkout') {
             steps {
                 script {
@@ -30,28 +23,9 @@ pipeline {
             }
         }
 
-        stage('Setup CommitLint') {
-            steps {
-                script {
-                    try {
-                        sh 'npm install --save-dev @commitlint/cli @commitlint/config-conventional'
-                        sh 'echo "module.exports = {extends: [\'@commitlint/config-conventional\']};" > commitlint.config.js'
-                    } catch (Exception e) {
-                        error "Failed to setup CommitLint: ${e.getMessage()}"
-                    }
-                }
-            }
-        }
-
         stage('Lint Commits') {
             steps {
-                script {
-                    try {
-                        sh "npx commitlint --from ${env.PR_BASE_SHA} --to ${env.PR_HEAD_SHA} --verbose"
-                    } catch (Exception e) {
-                        error "CommitLint check failed: ${e.getMessage()}"
-                    }
-                }
+                sh "commitlint --from ${env.PR_BASE_SHA} --to ${env.PR_HEAD_SHA} --verbose --config /etc/commitlint.config.js"
             }
         }
     }
