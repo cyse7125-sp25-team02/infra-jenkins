@@ -5,12 +5,13 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
-                        sh 'git fetch origin master --depth=1'
+                    sh 'git config --global user.email "jenkins@jkops.com"'
+                    sh 'git config --global user.name "Jenkins"'
+                    
+                    git branch: 'master', url: 'https://github.com/cyse7125-sp25-team02/infra-jenkins', credentialsId: 'github-credentials'
                         
-                        env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/master', returnStdout: true).trim()
-                        env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                    }
+                    env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/master', returnStdout: true).trim()
+                    env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                 }
             }
         }
