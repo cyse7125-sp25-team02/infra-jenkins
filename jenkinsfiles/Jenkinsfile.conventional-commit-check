@@ -2,6 +2,13 @@ pipeline {
     agent any
 
     stages {
+        stage('Verify Environment') {
+            steps {
+                sh 'node --version'
+                sh 'npm --version'
+            }
+        }
+
         stage('Checkout') {
             steps {
                 script {
@@ -14,25 +21,40 @@ pipeline {
                         sh "git fetch origin master"
                         sh "git fetch origin pull/${CHANGE_ID}/head:PR-${CHANGE_ID}"
                         
+                        sh "git checkout PR-${CHANGE_ID}"
+                        
                         env.PR_BASE_SHA = sh(script: 'git rev-parse origin/master', returnStdout: true).trim()
                         env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                         
                         echo "Checking commits from ${env.PR_BASE_SHA} to ${env.PR_HEAD_SHA}"
+                        sh "git log --oneline ${env.PR_BASE_SHA}..${env.PR_HEAD_SHA}"
                     }
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup CommitLint') {
             steps {
-                sh 'npm install -g @commitlint/config-conventional'
-                sh 'ls -la /etc/commitlint.config.js || echo "Config file not found"'
+                script {
+                    try {
+                        sh 'npm install --save-dev @commitlint/cli @commitlint/config-conventional'
+                        sh 'echo "module.exports = {extends: [\'@commitlint/config-conventional\']};" > commitlint.config.js'
+                    } catch (Exception e) {
+                        error "Failed to setup CommitLint: ${e.getMessage()}"
+                    }
+                }
             }
         }
 
         stage('Lint Commits') {
             steps {
-                sh "commitlint --from ${env.PR_BASE_SHA} --to ${env.PR_HEAD_SHA} --verbose --config /etc/commitlint.config.js"
+                script {
+                    try {
+                        sh "npx commitlint --from ${env.PR_BASE_SHA} --to ${env.PR_HEAD_SHA} --verbose"
+                    } catch (Exception e) {
+                        error "CommitLint check failed: ${e.getMessage()}"
+                    }
+                }
             }
         }
     }
