@@ -4,14 +4,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
+                git branch: 'master',
                     credentialsId: 'github-credentials',
                     url: 'https://github.com/cyse7125-sp25-team02/infra-jenkins.git'
                 
                 script {
-                    sh 'git fetch origin main --depth=1'
+                    sh 'git fetch origin master --depth=1'
 
-                    env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/main', returnStdout: true).trim()
+                    env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/master', returnStdout: true).trim()
                     env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                 }
             }
