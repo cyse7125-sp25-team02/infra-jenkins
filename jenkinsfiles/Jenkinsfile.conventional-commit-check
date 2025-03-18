@@ -12,10 +12,12 @@ pipeline {
                         git checkout PR-${CHANGE_ID}
                     '''
                 }
+
                 script {
                     env.PR_BASE_SHA = sh(script: 'git merge-base master HEAD', returnStdout: true).trim()
                     env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                 }
+
                 sh "git log --oneline ${env.PR_BASE_SHA}..${env.PR_HEAD_SHA}"
                 sh '''
                     echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
@@ -25,18 +27,12 @@ pipeline {
 
         stage('Lint Commits') {
             steps {
-                sh "npx commitlint --from ${env.PR_BASE_SHA} --to ${env.PR_HEAD_SHA} --verbose"
+                sh "commitlint --from ${env.PR_BASE_SHA} --to ${env.PR_HEAD_SHA} --verbose"
             }
         }
     }
 
     post {
-        success {
-            echo "All commits follow the conventional commit format!"
-        }
-        failure {
-            echo "Some commits do not follow the conventional commit format. Please fix them and try again."
-        }
         always {
             cleanWs()
         }
