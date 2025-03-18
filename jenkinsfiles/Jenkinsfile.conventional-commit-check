@@ -4,17 +4,13 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                cleanWs()
-                sh 'git config --global user.email "jenkins@jkops.com"'
-                sh 'git config --global user.name "Jenkins"'
-                
-                git url: 'https://github.com/cyse7125-sp25-team02/static-site', credentialsId: 'github-credentials'
-                
                 script {
-                    sh 'git fetch origin master --depth=1'
-
-                    env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/master', returnStdout: true).trim()
-                    env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    withCredentials([gitUsernamePassword(credentialsId: 'github-credentials')]) {
+                        sh 'git fetch origin master --depth=1'
+                        
+                        env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/master', returnStdout: true).trim()
+                        env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    }
                 }
             }
         }
