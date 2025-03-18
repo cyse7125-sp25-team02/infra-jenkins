@@ -10,7 +10,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        git remote set-url origin https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@${REPO_URL}
+                        git remote set-url origin ${REPO_URL}
                         git fetch --no-tags origin master:master
                         git fetch origin pull/${CHANGE_ID}/head:PR-${CHANGE_ID}
                         git checkout PR-${CHANGE_ID}
