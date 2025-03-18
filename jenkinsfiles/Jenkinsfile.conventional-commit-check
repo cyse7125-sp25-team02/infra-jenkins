@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    withCredentials([gitUsernamePassword(credentialsId: 'github-credentials')]) {
+                    withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh 'git fetch origin master --depth=1'
                         
                         env.PR_BASE_SHA = sh(script: 'git merge-base HEAD origin/master', returnStdout: true).trim()
