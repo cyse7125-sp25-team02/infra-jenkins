@@ -2,26 +2,26 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_CREDS = credentials('github-credentials')
-        REPO_URL = "https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/cyse7125-sp25-team02/infra-jenkins.git"
+        REPO_URL = "https://github.com/cyse7125-sp25-team02/infra-jenkins.git"
     }
 
     stages {
         stage('Checkout and Setup') {
             steps {
-                sh """
-                    git remote set-url origin "${REPO_URL}"
-                    git fetch --no-tags origin master:master
-                    git fetch origin pull/${CHANGE_ID}/head:PR-${CHANGE_ID}
-                    git checkout PR-${CHANGE_ID}
-                """
+                withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GITHUB_USERNAME', passwordVariable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        git remote set-url origin https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@${REPO_URL}
+                        git fetch --no-tags origin master:master
+                        git fetch origin pull/${CHANGE_ID}/head:PR-${CHANGE_ID}
+                        git checkout PR-${CHANGE_ID}
+                    '''
+                }
                 script {
                     env.PR_BASE_SHA = sh(script: 'git merge-base master HEAD', returnStdout: true).trim()
                     env.PR_HEAD_SHA = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
                 }
                 sh "git log --oneline ${env.PR_BASE_SHA}..${env.PR_HEAD_SHA}"
                 sh '''
-                    npm install --save-dev @commitlint/cli @commitlint/config-conventional
                     echo "module.exports = {extends: ['@commitlint/config-conventional']};" > commitlint.config.js
                 '''
             }
