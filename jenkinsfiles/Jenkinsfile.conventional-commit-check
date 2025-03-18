@@ -8,7 +8,6 @@ pipeline {
                     sh '''
                         git remote set-url origin "https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/cyse7125-sp25-team02/infra-jenkins.git"
                         git fetch --no-tags origin master:master
-                        git fetch origin pull/${CHANGE_ID}/head:PR-${CHANGE_ID}
                         git checkout PR-${CHANGE_ID}
                     '''
                 }
